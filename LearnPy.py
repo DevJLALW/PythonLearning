@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
+from sklearn.decomposition import PCA
 
 data = datasets.load_wine()
 #
@@ -17,9 +18,15 @@ data_scaled_train = scaler.transform(data_train)
 data_scaled_test = scaler.transform(data_test)
 print(data_scaled_train[0])
 
+pca = PCA(n_components=5)
+pca.fit(data_scaled_train)
+data_lower_dim_train = pca.transform(data_scaled_train)
+data_lower_dim_test = pca.transform(data_scaled_test)
+print("PCA ",pca.explained_variance_)
+
 model = KNeighborsClassifier(n_neighbors=25)
-model.fit(data_scaled_train, target_train)
-result = model.predict(data_scaled_test)
+model.fit(data_lower_dim_train, target_train)
+result = model.predict(data_lower_dim_test)
 score=accuracy_score(result, target_test)
 print(result)
 print(target_test[:20])
@@ -30,8 +37,8 @@ best_accuracy = 0.0
 print("Varying n_neighbors")
 for i in range(1, 50):  # Start from 1 to avoid n_neighbors=0
     model = KNeighborsClassifier(n_neighbors=i)
-    model.fit(data_scaled_train, target_train)
-    result = model.predict(data_scaled_test)
+    model.fit(data_lower_dim_train, target_train)
+    result = model.predict(data_lower_dim_test)
     score = accuracy_score(result, target_test)
     print(f"n_neighbors={i}, Accuracy: {score:.2f}")
 
